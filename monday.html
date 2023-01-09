@@ -1,0 +1,70 @@
+<html>
+ <head>
+  <title></title>
+  
+ </head>
+
+ <body>
+     <button type="button" id ="getData">Get Data</button>
+     <button type="button" id ="Update">Update Desc</button>
+<h2><div id="results"></div></h2>   
+
+<script>
+const API = '<your API Key>'
+//3428199321
+function getData() {
+let query = 'query { boards(ids: <BOARD-ID>) { name id description groups { id items { id name } } } }'
+console.log(JSON.stringify({ 'query' : query }))
+fetch ("https://api.monday.com/v2", {
+  method: 'post',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization' : API
+   },
+   body: JSON.stringify({ 'query' : query })
+  })
+  .then(res => res.json())
+  .then(res => document.getElementById("results").innerText =JSON.stringify(res, null, 2) )
+}
+</script>
+<script>
+
+function updateBoard() {
+  var name = 'abood'
+  let query = "mutation { create_item (board_id: <BOARD-ID>, group_id: \"this_month2\", item_name: " + name + ") { id }}";
+var itemID
+console.log(JSON.stringify({ 'query' : query }))
+fetch ("https://api.monday.com/v2", {
+  method: 'post',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization' : API
+   },
+   body: JSON.stringify({
+     query : query
+   })
+  })
+   .then(res => res.json())
+   .then(res => {
+          console.log(JSON.stringify(res.data.create_item.id, null, 2))
+          itemID = res.data.create_item.id
+          let query = "mutation { change_multiple_column_values(board_id: <BOARD-ID>, item_id: " + itemID +", column_values: {\"<COLUMN-HEADER>\":\"COLUMN-VALUE\"}) { id}}"
+          fetch ("https://api.monday.com/v2", {
+                      method: 'post',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization' : API
+                      },
+                      body: JSON.stringify({
+                        query : query
+                      })
+                })
+          .then(res => res.json())
+          .then(res => {console.log(JSON.stringify(res, null, 2))})        
+})
+}
+document.getElementById("getData").addEventListener("click", getData)
+document.getElementById("Update").addEventListener("click", updateBoard)
+</script>
+</body>
+</html>
